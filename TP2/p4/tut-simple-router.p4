@@ -232,13 +232,13 @@ control MyIngress(inout headers hdr,
         default_action = drop;
     }
 
-    action reply(ip4Addr_t nxt_hop, macAddr_t nt_mac, egressSpec_t port){
+    action reply(ip4Addr_t nxt_hop, macAddr_t nt_mac){
         hdr.ipv4.dstAddr = hdr.ipv4.srcAddr;
         hdr.ipv4.srcAddr = nxt_hop; 
         hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
         hdr.ethernet.srcAddr = nt_mac;
         hdr.icmp.type = 0x00;
-        standard_metadata.egress_spec = port;
+        standard_metadata.egress_spec = standard_metadata.ingress_port;
     }
 
     table icmp_flow{
@@ -248,7 +248,7 @@ control MyIngress(inout headers hdr,
             NoAction;
             drop;
         }
-        default_action = drop;
+        default_action = NoAction;
     }
 /*
     table allow{
@@ -290,6 +290,7 @@ control MyIngress(inout headers hdr,
             else{
                 tcp_flow.apply();
             }
+            
         }
 
 

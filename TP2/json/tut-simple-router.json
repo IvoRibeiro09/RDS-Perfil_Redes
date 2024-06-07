@@ -287,7 +287,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/tut-simple-router.p4",
-        "line" : 342,
+        "line" : 343,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
@@ -304,7 +304,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/tut-simple-router.p4",
-        "line" : 320,
+        "line" : 321,
         "column" : 1,
         "source_fragment" : "update_checksum( ..."
       },
@@ -656,10 +656,6 @@
         {
           "name" : "nt_mac",
           "bitwidth" : 48
-        },
-        {
-          "name" : "port",
-          "bitwidth" : 9
         }
       ],
       "primitives" : [
@@ -766,15 +762,15 @@
               "value" : ["standard_metadata", "egress_spec"]
             },
             {
-              "type" : "runtime_data",
-              "value" : 2
+              "type" : "field",
+              "value" : ["standard_metadata", "ingress_port"]
             }
           ],
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
             "line" : 241,
             "column" : 8,
-            "source_fragment" : "standard_metadata.egress_spec = port"
+            "source_fragment" : "standard_metadata.egress_spec = standard_metadata.ingress_port"
           }
         }
       ]
@@ -936,7 +932,7 @@
             "MyIngress.drop" : null
           },
           "default_entry" : {
-            "action_id" : 7,
+            "action_id" : 2,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -1053,7 +1049,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "p4/tut-simple-router.p4",
-        "line" : 307,
+        "line" : 308,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },
@@ -1069,7 +1065,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/tut-simple-router.p4",
-        "line" : 320,
+        "line" : 321,
         "column" : 1,
         "source_fragment" : "update_checksum( ..."
       },
