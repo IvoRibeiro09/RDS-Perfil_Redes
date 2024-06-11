@@ -1,0 +1,200 @@
+{
+    "LAN1":
+    {
+        "Hosts":
+        [
+            {
+                "NAME":"h11",
+                "IP":"10.0.1.100/24",
+                "MAC":"00:01:00:00:00:01",
+                "DGW-IP": "10.0.1.251",
+                "DGW-MAC":"00:aa:bb:00:00:01"
+            }
+        ],
+        "Servers":
+        [
+            {
+                "NAME":"sv11",
+                "IP":"10.0.1.10/24",
+                "MAC":"00:01:00:00:00:02",
+                "DGW-IP": "10.0.1.251",
+                "DGW-MAC":"00:aa:bb:00:00:01"
+            },
+            {
+                "NAME":"sv12",
+                "IP":"10.0.1.20/24",
+                "MAC":"00:01:00:00:00:03",
+                "DGW-IP": "10.0.1.251",
+                "DGW-MAC":"00:aa:bb:00:00:01"
+            } 
+        ],
+        "Switchs":
+        [
+            {
+                "NAME":"sw1",
+                "RULES":
+                [   
+                    "priority=200,dl_dst=ff:ff:ff:ff:ff:ff,actions=output:1,2,3",
+                    "priority=100,dl_dst=00:01:00:00:00:01,actions=output:1",
+                    "priority=100,dl_dst=00:01:00:00:00:02,actions=output:2",
+                    "priority=100,dl_dst=00:01:00:00:00:03,actions=output:3",
+                    "priority=50,actions=output:4"
+                ]
+            }
+        ],
+        "Routers":
+        [
+            {
+                "NAME":"r1",
+                "PORTS":
+                [
+                    ["10.0.1.251/24","00:aa:bb:00:00:01"],
+                    ["10.0.1.252/24","00:aa:bb:00:00:02"],
+                    ["10.0.1.253/24","00:aa:bb:00:00:03"]
+                ],
+                "THRIFT_PORT": "9091",
+                "GRPC_PORT": "50051",
+                "ID": "1",
+                "COMMANDS": "commands/commands_r1.txt"
+            }
+        ]
+    },
+    "LAN2":
+    {
+        "Hosts":
+        [
+            {
+                "NAME":"h21",
+                "IP":"10.0.2.100/24",
+                "MAC":"00:02:00:00:00:01",
+                "DGW-IP": "10.0.2.251",
+                "DGW-MAC":"00:aa:bb:00:00:01"
+            }
+        ],
+        "Servers":
+        [
+            {
+                "NAME":"sv21",
+                "IP":"10.0.2.10/24", 
+                "MAC":"00:02:00:00:00:02",
+                "DGW-IP": "10.0.2.251",
+                "DGW-MAC":"00:aa:bb:00:00:01"
+            },
+            {
+                "NAME":"sv22",
+                "IP":"10.0.2.20/24",
+                "MAC":"00:02:00:00:00:03",
+                "DGW-IP": "10.0.2.251",
+                "DGW-MAC":"00:aa:bb:00:00:01"
+            } 
+        ],
+        "Switchs":
+        [
+            {
+                "NAME":"sw2",
+                "RULES":
+                [
+                    "priority=200,dl_dst=ff:ff:ff:ff:ff:ff,actions=output:1,2,3",
+                    "priority=100,dl_dst=00:02:00:00:00:01,actions=output:1",
+                    "priority=100,dl_dst=00:02:00:00:00:02,actions=output:2",
+                    "priority=100,dl_dst=00:02:00:00:00:03,actions=output:3",
+                    "priority=50,actions=output:4"
+                ]
+            }
+        ],
+        "Routers":
+        [
+            {
+                "NAME":"r2",
+                "PORTS":
+                [
+                    ["10.0.2.251","00:aa:cc:00:00:01"],
+                    ["10.0.2.252","00:aa:cc:00:00:02"],
+                    ["10.0.2.253","00:aa:cc:00:00:03"]
+                ],
+                "THRIFT_PORT": "9092",
+                "GRPC_PORT": "50052",
+                "ID": "2",
+                "COMMANDS": "commands/commands_r2.txt"
+            }
+        ]
+    },
+    "LAN3":
+    {
+        "Hosts":
+        [
+            {
+                "NAME":"h31",
+                "IP":"10.0.3.100/24",
+                "MAC":"00:03:00:00:00:01",
+                "DGW-IP":"10.0.3.251",
+                "DGW-MAC":"00:aa:bb:00:00:01"
+            }
+        ],
+        "Servers":
+        [
+            {
+                "NAME":"sv31",
+                "IP":"10.0.3.10/24",
+                "MAC":"00:03:00:00:00:02",
+                "DGW-IP":"10.0.3.251",
+                "DGW-MAC":"00:aa:bb:00:00:01"
+            },
+            {
+                "NAME":"sv32",
+                "IP":"10.0.3.20/24",
+                "MAC":"00:03:00:00:00:03",
+                "DGW-IP":"10.0.3.251",
+                "DGW-MAC":"00:aa:bb:00:00:01"
+            } 
+        ],
+        "Switchs":
+        [
+            {
+                "NAME":"sw3",
+                "RULES":
+                [
+                    "priority=200,dl_dst=ff:ff:ff:ff:ff:ff,actions=output:1,2,3",
+                    "priority=100,dl_dst=00:03:00:00:00:01,actions=output:1",
+                    "priority=100,dl_dst=00:03:00:00:00:02,actions=output:2",
+                    "priority=100,dl_dst=00:03:00:00:00:03,actions=output:3",
+                    "priority=50,actions=output:4"
+                ]
+            }
+        ],
+        "Routers":
+        [
+            {
+                "NAME":"r3",
+                "PORTS":
+                [
+                    ["10.0.3.251","00:aa:dd:00:00:01"],
+                    ["10.0.3.252","00:aa:dd:00:00:02"],
+                    ["10.0.3.253","00:aa:dd:00:00:03"]
+                ],
+                "THRIFT_PORT": "9093",
+                "GRPC_PORT": "50053",
+                "ID": "3",
+                "COMMANDS": "commands/commands_r3.txt"
+            }
+        ]
+    },
+    "CONECTIONS":
+    [ 
+        "h11 <-> sw1",
+        "sv11 <-> sw1",
+        "sv12 <-> sw1",
+        "h21 <-> sw2",
+        "sv21 <-> sw2",
+        "sv22 <-> sw2",
+        "h31 <-> sw3",
+        "sv31 <-> sw3",
+        "sv32 <-> sw3",
+        "r1 1 <-> sw1",
+        "r2 1 <-> sw2",
+        "r3 1 <-> sw3",
+        "r1 2 <-> r2 2",
+        "r1 3 <-> r3 2",
+        "r2 3 <-> r3 3"
+    ]
+}

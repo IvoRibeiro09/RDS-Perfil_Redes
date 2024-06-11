@@ -1,0 +1,37 @@
+reset_state
+table_set_default ipv4_lpm drop
+table_set_default src_mac drop 
+table_set_default dst_mac drop
+table_set_default tcp_flow drop
+table_add icmp_flow reply 10.0.3.251/32 => 10.0.3.251 00:aa:dd:00:00:01
+table_add icmp_flow reply 10.0.3.252/32 => 10.0.3.252 00:aa:dd:00:00:02
+table_add icmp_flow reply 10.0.3.253/32 => 10.0.3.253 00:aa:dd:00:00:03
+table_add tcp_flow NoAction 10.0.1.100 10.0.3.10 0->65535 8080->8080 => 1
+table_add tcp_flow NoAction 10.0.3.10 10.0.1.100 8080->8080 0->65535 => 1
+table_add tcp_flow NoAction 10.0.2.100 10.0.3.20 0->65535 443->443 => 1
+table_add tcp_flow NoAction 10.0.3.20 10.0.2.100 443->443 0->65535 => 1
+table_add tcp_flow NoAction 10.0.3.100 10.0.2.20 0->65535 22->22 => 1
+table_add tcp_flow NoAction 10.0.2.20 10.0.3.100 22->22 0->65535 => 1
+table_add tcp_flow NoAction 10.0.3.100 10.0.1.10 0->65535 443->443 => 1
+table_add tcp_flow NoAction 10.0.1.10 10.0.3.100 443->443 0->65535 => 1
+table_add ipv4_lpm ipv4_fwd 10.0.3.100/32 => 10.0.3.100 1
+table_add src_mac rewrite_src_mac 1 => 00:aa:dd:00:00:01
+table_add dst_mac rewrite_dst_mac 10.0.3.100 => 00:03:00:00:00:01
+table_add ipv4_lpm ipv4_fwd 10.0.3.10/32 => 10.0.3.10 1
+table_add src_mac rewrite_src_mac 1 => 00:aa:dd:00:00:01
+table_add dst_mac rewrite_dst_mac 10.0.3.10 => 00:03:00:00:00:02
+table_add ipv4_lpm ipv4_fwd 10.0.3.20/32 => 10.0.3.20 1
+table_add src_mac rewrite_src_mac 1 => 00:aa:dd:00:00:01
+table_add dst_mac rewrite_dst_mac 10.0.3.20 => 00:03:00:00:00:03
+table_add ipv4_lpm ipv4_fwd 10.0.1.0/24 => 10.0.3.253 2
+table_add src_mac rewrite_src_mac 2 => 00:aa:dd:00:00:02
+table_add dst_mac rewrite_dst_mac 10.0.3.253 => 00:aa:bb:00:00:03
+table_add ipv4_lpm ipv4_fwd 10.0.2.0/24 => 10.0.3.252 3
+table_add src_mac rewrite_src_mac 3 => 00:aa:dd:00:00:03
+table_add dst_mac rewrite_dst_mac 10.0.3.252 => 00:aa:cc:00:00:02
+table_add ipv4_lpm ipv4_fwd 10.0.3.253/32 => 10.0.3.253 2
+table_add src_mac rewrite_src_mac 2 => 00:aa:dd:00:00:02
+table_add dst_mac rewrite_dst_mac 10.0.3.253 => 00:aa:bb:00:00:03
+table_add ipv4_lpm ipv4_fwd 10.0.3.252/32 => 10.0.3.252 3
+table_add src_mac rewrite_src_mac 3 => 00:aa:dd:00:00:03
+table_add dst_mac rewrite_dst_mac 10.0.3.252 => 00:aa:cc:00:00:02
