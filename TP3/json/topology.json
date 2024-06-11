@@ -54,8 +54,7 @@
                 ],
                 "THRIFT_PORT": "9091",
                 "GRPC_PORT": "50051",
-                "ID": "1",
-                "COMMANDS": "commands/commands_r1.txt"
+                "ID": "1"
             }
         ]
     },
@@ -114,8 +113,7 @@
                 ],
                 "THRIFT_PORT": "9092",
                 "GRPC_PORT": "50052",
-                "ID": "2",
-                "COMMANDS": "commands/commands_r2.txt"
+                "ID": "2"
             }
         ]
     },
@@ -174,8 +172,7 @@
                 ],
                 "THRIFT_PORT": "9093",
                 "GRPC_PORT": "50053",
-                "ID": "3",
-                "COMMANDS": "commands/commands_r3.txt"
+                "ID": "3"
             }
         ]
     },

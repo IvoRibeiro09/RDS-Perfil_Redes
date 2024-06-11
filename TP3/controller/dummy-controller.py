@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import json
 import os
 import sys
 from time import sleep
@@ -15,9 +16,6 @@ import p4runtime_lib.helper
 from p4runtime_lib.error_utils import printGrpcError
 from p4runtime_lib.switch import ShutdownAllSwitchConnections
 
-#port mac mapping
-port_mac_mapping_r1 = {1: "00:bb:bb:00:01:01", 2: "00:bb:bb:00:01:02"}
-port_mac_mapping_r2 = {1: "00:bb:bb:00:02:01", 2: "00:bb:bb:00:02:02"}
 
 def printGrpcError(e):
     print("gRPC Error:", e.details(), end=' ')
@@ -103,64 +101,72 @@ def printCounter(p4info_helper, sw, counter_name, index):
             ))
 
 
-def main(p4info_file_path, bmv2_file_path):
+def main(p4info_file_path, bmv2_file_path, json_file, rules):
     # Instantiate a P4Runtime helper from the p4info file
     p4info_helper = p4runtime_lib.helper.P4InfoHelper(p4info_file_path)
+    routers = []
 
     try:
         # this is backed by a P4Runtime gRPC connection.
         # Also, dump all P4Runtime messages sent to switch to given txt files.
-        r1 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
-            name='r1',
-            address='127.0.0.1:50051',
-            device_id=1,
-            proto_dump_file='logs/r1-p4runtime-request.txt')
-        r2 = p4runtime_lib.bmv2.Bmv2SwitchConnection(
-            name='r2',
-            address='127.0.0.1:50052',
-            device_id=2,
-            proto_dump_file='logs/r2-p4runtime-request.txt')
+        for router in json_file:
+            print(router)
+            r = p4runtime_lib.bmv2.Bmv2SwitchConnection(
+                name= router["Name"],
+                address= router["Address"],
+                device_id= int(router["ID"]),
+                proto_dump_file= router["proto_dump_file"])
+            routers.append(r)
         print("connection successful")
 
         # Send master arbitration update message to establish this controller as
         # master (required by P4Runtime before performing any other write operation)
-        r1.MasterArbitrationUpdate()
-        r2.MasterArbitrationUpdate()
+        for r in routers: r.MasterArbitrationUpdate()
 
         # Install the P4 program on the switches
-        r1.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
+        for r in routers:
+            r.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
                                        bmv2_json_file_path=bmv2_file_path)
-        print("Installed P4 Program using SetForwardingPipelineConfig on r1")
-        r2.SetForwardingPipelineConfig(p4info=p4info_helper.p4info,
-                                       bmv2_json_file_path=bmv2_file_path)
-        print("Installed P4 Program using SetForwardingPipelineConfig on r2")
+            print("Installed P4 Program using SetForwardingPipelineConfig on ", r.name)
+        
+        # Set mac addresses of router 
+        for r in routers:
+            j = 1
+            dic = {}
+            for i in rules[r.name]["writeSrcMac"]:
+                dic[j] = i
+                j+=1
+            print(dic)
+            writeSrcMac(p4info_helper, r, dic)
 
-        writeSrcMac(p4info_helper, r1, port_mac_mapping_r1)
-        writeSrcMac(p4info_helper, r2, port_mac_mapping_r2)
+        # IPV4 foward rules
+        # writeFwdRules(p4info_helper, sw, dstAddr, mask, nextHop, port, dstMac)
+        for r in routers:
+            for fwd_rule in rules[r.name]["writeFwdRules"]:
+                print(fwd_rule)
+                writeFwdRules(p4info_helper, r, fwd_rule[0], fwd_rule[1], fwd_rule[2], fwd_rule[3], fwd_rule[4])
+        
+        # Read tables 
+        for r in routers: 
+            readTableRules(p4info_helper, r)
 
-        #r1 fwd
-        writeFwdRules(p4info_helper, r1, "10.0.1.10", 32, "10.0.1.10", 1, "00:aa:00:00:01:01")
-        writeFwdRules(p4info_helper, r1, "10.0.1.20", 32, "10.0.1.20", 1, "00:aa:00:00:01:02")
-        writeFwdRules(p4info_helper, r1, "10.0.2.0", 24, "10.0.4.2", 2, "00:bb:bb:00:02:02")
-        #r2 fwd
-        writeFwdRules(p4info_helper, r2, "10.0.2.10", 32, "10.0.2.10", 1, "00:aa:00:00:02:01")
-        writeFwdRules(p4info_helper, r2, "10.0.2.20", 32, "10.0.2.20", 1, "00:aa:00:00:02:02")
-        writeFwdRules(p4info_helper, r2, "10.0.1.0", 24, "10.0.4.3", 2, "00:bb:bb:00:01:02")      
-
-        readTableRules(p4info_helper, r1)
-        readTableRules(p4info_helper, r2)
-
-
+        # Show run time
         while True:
             sleep(10)
             print('\n----- Reading counters -----')
-            printCounter(p4info_helper, r1, "MyIngress.c", 1)
-            printCounter(p4info_helper, r2, "MyIngress.c", 1)
+            for r in routers:
+                printCounter(p4info_helper, r, "MyIngress.c", 1)
+            #printCounter(p4info_helper, r2, "MyIngress.c", 1)
 
     except KeyboardInterrupt:
         print(" Shutting down.")
     except grpc.RpcError as e:
         printGrpcError(e)
+
+def parseTopology(file):
+    with open(file) as f:
+        parsed_data = json.load(f)
+    return parsed_data
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='P4Runtime Controller')
@@ -170,6 +176,12 @@ if __name__ == '__main__':
     parser.add_argument('--bmv2-json', help='BMv2 JSON file from p4c',
                         type=str, action="store", required=False,
                         default='build/s-router.json')
+    parser.add_argument('--json', help='Path to JSON topology file',
+                        type=str, action="store", required=False,
+                        default="json/controller.json")
+    parser.add_argument('--rules', help='Path to JSON rules file',
+                        type=str, action="store", required= False, 
+                        default="json/rules.json")
     args = parser.parse_args()
 
     if not os.path.exists(args.p4info):
@@ -180,4 +192,5 @@ if __name__ == '__main__':
         parser.print_help()
         print("\nBMv2 JSON file not found:")
         parser.exit(1)
-    main(args.p4info, args.bmv2_json)
+
+    main(args.p4info, args.bmv2_json, parseTopology(args.json), parseTopology(args.rules))

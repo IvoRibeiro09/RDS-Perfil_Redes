@@ -27,11 +27,11 @@
 # You can see the definition of P4Host and P4Switch in p4_mininet.py
 ###########################################################################
 ###########################################################################
-#  Compile p4 
-#  p4c-bm2-ss --p4v 16 p4/tut-simple-router.p4 -o json/tut-simple-router.json
+#  Compilador de p4:
+#  p4c-bm2-ss --p4v 16 --p4runtime-files build/s-router.p4.p4info.txt -o build/s-router.json p4/s-router.p4
 #
 #  Comando para correr:
-#  sudo python mininet/topo_main.py --json json/tut-simple-router.json --topo-json json/topology.json 
+#  sudo python mininet/topo_main.py
 #
 #  Comando para limpar mininet:
 #  sudo mn -c
@@ -40,32 +40,23 @@
 
 from mininet.net import Mininet
 from mininet.topo import Topo
-from mininet.log import setLogLevel, info
+from mininet.log import setLogLevel
 from mininet.cli import CLI
 from mininet.node import OVSSwitch
 
-from p4_mininet import P4Switch, P4Host
+from p4_mininet import P4Host
 from p4runtime_switch import P4RuntimeSwitch
 
 import argparse
 from time import sleep
 import json
 
-# If you look at this parser, it can identify 4 arguments
-# --behavioral-exe, with the default value 'simple_switch'
-## this indicates that the arch of our software switch is the 'simple_switch'
-## and any p4 program made for this arch needs to be compiled against de 'v1model.p4'
-# --thrift-port, with the default value of 9090, which is the default server port of
-## a thrift server - the P4Switch instantiates a Thrift server that allows us
-## to communicate our P4Switch (software switch) at runtime
-# --num-hosts, with default value 2 indicates the number of hosts...
-# --json, is the path to JSON config file - the output of your p4 program compilation
-## this is the only argument that you will need to pass in orther to run the script
 parser = argparse.ArgumentParser(description='Mininet demo')
 parser.add_argument('--behavioral-exe', help='Path to behavioral executable',
                     type=str, action="store", default='simple_switch_grpc')
 parser.add_argument('--topo-json', help='Path to JSON topology file',
-                    type=str, action="store", required=True)
+                    type=str, action="store", required=False,
+                    default= "json/topology.json")
 
 args = parser.parse_args()
 
@@ -145,7 +136,7 @@ def main():
     # the switch class is the P4Switch
     net = Mininet(topo = topo,
                   host = P4Host,
-                  switch = P4Switch,
+                  #switch = P4Switch,
                   controller = None)
     
     # Here, the mininet will use the constructor (__init__()) of the P4Switch class, 
@@ -153,8 +144,6 @@ def main():
     # our software switch.
     net.start()
 
-    # h.setARP() populates the arp table of the host
-    # h.setDefaultRoute() sets the defaultRoute for the host
     # populating the arp table of the host with the switch ip and switch mac
     # avoids the need for arp request from the host
     for lan in topology.keys():
@@ -176,13 +165,6 @@ def main():
                 #Set Default gateway
                 s.cmd("route add default gw {}".format(srv['DGW-IP']))
                 s.describe()
-        if "Routers" in LAN:
-            for r in LAN['Routers']:
-                rt = net.get(r['NAME'])
-                #Set commands
-                comando = "simple_switch_CLI --thrift-port {} < {}".format(r['THRIFT_PORT'], r['COMMANDS'])
-                rt.cmd(comando)
-                print("Comando\n\t{}\nExecutado!".format(comando))
         if "Switchs" in LAN:
             for sw in LAN['Switchs']:
                 sw1 = net.get(sw['NAME'])

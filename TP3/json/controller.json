@@ -1,0 +1,20 @@
+[
+    {   
+        "Name": "r1", 
+        "Address": "127.0.0.1:50051",
+        "ID" : "1",
+        "proto_dump_file": "logs/r1-p4runtime-request.txt"
+    },
+    {
+        "Name": "r2", 
+        "Address": "127.0.0.1:50052",
+        "ID" : "2",
+        "proto_dump_file": "logs/r2-p4runtime-request.txt"
+    },
+    {
+        "Name": "r3", 
+        "Address": "127.0.0.1:50053",
+        "ID" : "3",
+        "proto_dump_file": "logs/r3-p4runtime-request.txt"
+    }
+]
