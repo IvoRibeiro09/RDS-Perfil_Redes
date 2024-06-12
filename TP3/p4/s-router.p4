@@ -5,6 +5,7 @@
 const bit<16> TYPE_IPV4 = 0x800;
 const bit<8> TYPE_TCP  = 0x06;
 const bit<8> TYPE_UDP  = 0x11;
+const bit<8> TYPE_ICMP = 0x01;
 
 /*************************************************************************
 *********************** H E A D E R S  ***********************************
@@ -51,7 +52,12 @@ header tcp_t {
     bit<16> urgentPtr;
 }
 
-
+header icmp_t {
+    bit<8>    type;
+    bit<8>    code;
+    bit<16>   checksum;
+    bit<32>   rest;
+}
 
 struct metadata {
     ip4Addr_t   next_hop_ipv4;
@@ -61,6 +67,7 @@ struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
     tcp_t        tcp;
+    icmp_t       icmp;
 }
 
 /*************************************************************************
@@ -84,8 +91,24 @@ parser MyParser(packet_in packet,
         }
     }
     
-    state parse_ipv4 {
-        packet.extract(hdr.ipv4);
+
+    state parse_ipv4{
+        packet.extract (hdr.ipv4);
+        transition select(hdr.ipv4.protocol){
+            TYPE_TCP: parse_tcp; 
+            //TYPE_UDP: parse_udp;
+            TYPE_ICMP: parse_icmp;
+            default: accept;
+        }
+    }
+
+    state parse_tcp{
+        packet.extract (hdr.tcp);
+        transition accept;
+    }
+
+    state parse_icmp{
+        packet.extract (hdr.icmp);
         transition accept;
     }
 
@@ -114,7 +137,6 @@ control MyIngress(inout headers hdr,
     action drop() {
         mark_to_drop(standard_metadata);
     }
-
    
     action ipv4_fwd(ip4Addr_t nxt_hop, egressSpec_t port) {
         meta.next_hop_ipv4 = nxt_hop;
@@ -130,7 +152,7 @@ control MyIngress(inout headers hdr,
             drop;
             NoAction;
         }
-        default_action = drop;
+        default_action = NoAction();
     }
 
     action rewrite_src_mac(macAddr_t src_mac) {
@@ -158,13 +180,51 @@ control MyIngress(inout headers hdr,
         }
         default_action = drop;
     }
+
+    table tcp_flow{
+        key = {hdr.ipv4.srcAddr : exact;
+               hdr.ipv4.dstAddr : exact;
+               hdr.tcp.srcPort : range;
+               hdr.tcp.dstPort : range;}    
+        actions = {
+            NoAction;
+            drop;
+        }
+        default_action = drop;
+    }
+
+    action reply(ip4Addr_t nxt_hop, macAddr_t nt_mac){
+        hdr.ipv4.dstAddr = hdr.ipv4.srcAddr;
+        hdr.ipv4.srcAddr = nxt_hop; 
+        hdr.ethernet.dstAddr = hdr.ethernet.srcAddr;
+        hdr.ethernet.srcAddr = nt_mac;
+        hdr.icmp.type = 0x00;
+        standard_metadata.egress_spec = standard_metadata.ingress_port;
+    }
+
+    table icmp_flow{
+        key = {hdr.ipv4.dstAddr : lpm;}
+        actions = { 
+            reply;
+            NoAction;
+            drop;
+        }
+        default_action = NoAction();
+    }
     
     
     apply {
-        if (hdr.ipv4.isValid()) {
+        if(hdr.ipv4.isValid()){
             ipv4_lpm.apply();
             src_mac.apply();
             dst_mac.apply();
+            if(hdr.icmp.isValid()){
+                icmp_flow.apply();
+            }
+            else{
+                tcp_flow.apply();
+            }
+            
         }
     }
 }
@@ -211,7 +271,9 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
         packet.emit(hdr.ethernet);
-        packet.emit(hdr.ipv4);   
+        packet.emit(hdr.ipv4); 
+        packet.emit(hdr.tcp);
+        packet.emit(hdr.icmp);  
     }
 }
 

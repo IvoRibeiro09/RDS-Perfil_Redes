@@ -73,6 +73,16 @@
         ["checksum", 16, false],
         ["urgentPtr", 16, false]
       ]
+    },
+    {
+      "name" : "icmp_t",
+      "id" : 5,
+      "fields" : [
+        ["type", 8, false],
+        ["code", 8, false],
+        ["checksum", 16, false],
+        ["rest", 32, false]
+      ]
     }
   ],
   "headers" : [
@@ -108,6 +118,13 @@
       "name" : "tcp",
       "id" : 4,
       "header_type" : "tcp_t",
+      "metadata" : false,
+      "pi_omit" : true
+    },
+    {
+      "name" : "icmp",
+      "id" : 5,
+      "header_type" : "icmp_t",
       "metadata" : false,
       "pi_omit" : true
     }
@@ -184,6 +201,71 @@
           ],
           "transitions" : [
             {
+              "type" : "hexstr",
+              "value" : "0x06",
+              "mask" : null,
+              "next_state" : "parse_tcp"
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x01",
+              "mask" : null,
+              "next_state" : "parse_icmp"
+            },
+            {
+              "type" : "default",
+              "value" : null,
+              "mask" : null,
+              "next_state" : null
+            }
+          ],
+          "transition_key" : [
+            {
+              "type" : "field",
+              "value" : ["ipv4", "protocol"]
+            }
+          ]
+        },
+        {
+          "name" : "parse_tcp",
+          "id" : 2,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "tcp"
+                }
+              ],
+              "op" : "extract"
+            }
+          ],
+          "transitions" : [
+            {
+              "type" : "default",
+              "value" : null,
+              "mask" : null,
+              "next_state" : null
+            }
+          ],
+          "transition_key" : []
+        },
+        {
+          "name" : "parse_icmp",
+          "id" : 3,
+          "parser_ops" : [
+            {
+              "parameters" : [
+                {
+                  "type" : "regular",
+                  "value" : "icmp"
+                }
+              ],
+              "op" : "extract"
+            }
+          ],
+          "transitions" : [
+            {
               "type" : "default",
               "value" : null,
               "mask" : null,
@@ -202,11 +284,11 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/s-router.p4",
-        "line" : 211,
+        "line" : 271,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
-      "order" : ["ethernet", "ipv4"],
+      "order" : ["ethernet", "ipv4", "tcp", "icmp"],
       "primitives" : []
     }
   ],
@@ -217,7 +299,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/s-router.p4",
-        "line" : 111,
+        "line" : 134,
         "column" : 39,
         "source_fragment" : "c"
       },
@@ -232,7 +314,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/s-router.p4",
-        "line" : 189,
+        "line" : 249,
         "column" : 1,
         "source_fragment" : "update_checksum( ..."
       },
@@ -294,48 +376,16 @@
       "primitives" : []
     },
     {
-      "name" : "MyIngress.drop",
+      "name" : "NoAction",
       "id" : 1,
       "runtime_data" : [],
-      "primitives" : [
-        {
-          "op" : "mark_to_drop",
-          "parameters" : [
-            {
-              "type" : "header",
-              "value" : "standard_metadata"
-            }
-          ],
-          "source_info" : {
-            "filename" : "p4/s-router.p4",
-            "line" : 115,
-            "column" : 8,
-            "source_fragment" : "mark_to_drop(standard_metadata)"
-          }
-        }
-      ]
+      "primitives" : []
     },
     {
-      "name" : "MyIngress.drop",
+      "name" : "NoAction",
       "id" : 2,
       "runtime_data" : [],
-      "primitives" : [
-        {
-          "op" : "mark_to_drop",
-          "parameters" : [
-            {
-              "type" : "header",
-              "value" : "standard_metadata"
-            }
-          ],
-          "source_info" : {
-            "filename" : "p4/s-router.p4",
-            "line" : 115,
-            "column" : 8,
-            "source_fragment" : "mark_to_drop(standard_metadata)"
-          }
-        }
-      ]
+      "primitives" : []
     },
     {
       "name" : "MyIngress.drop",
@@ -352,7 +402,95 @@
           ],
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 115,
+            "line" : 138,
+            "column" : 8,
+            "source_fragment" : "mark_to_drop(standard_metadata)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.drop",
+      "id" : 4,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "mark_to_drop",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "standard_metadata"
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 138,
+            "column" : 8,
+            "source_fragment" : "mark_to_drop(standard_metadata)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.drop",
+      "id" : 5,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "mark_to_drop",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "standard_metadata"
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 138,
+            "column" : 8,
+            "source_fragment" : "mark_to_drop(standard_metadata)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.drop",
+      "id" : 6,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "mark_to_drop",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "standard_metadata"
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 138,
+            "column" : 8,
+            "source_fragment" : "mark_to_drop(standard_metadata)"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.drop",
+      "id" : 7,
+      "runtime_data" : [],
+      "primitives" : [
+        {
+          "op" : "mark_to_drop",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "standard_metadata"
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 138,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -361,7 +499,7 @@
     },
     {
       "name" : "MyIngress.ipv4_fwd",
-      "id" : 4,
+      "id" : 8,
       "runtime_data" : [
         {
           "name" : "nxt_hop",
@@ -387,7 +525,7 @@
           ],
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 120,
+            "line" : 142,
             "column" : 8,
             "source_fragment" : "meta.next_hop_ipv4 = nxt_hop"
           }
@@ -406,7 +544,7 @@
           ],
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 121,
+            "line" : 143,
             "column" : 8,
             "source_fragment" : "standard_metadata.egress_spec = port"
           }
@@ -448,7 +586,7 @@
           ],
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 122,
+            "line" : 144,
             "column" : 8,
             "source_fragment" : "hdr.ipv4.ttl = hdr.ipv4.ttl - 1"
           }
@@ -467,7 +605,7 @@
           ],
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 123,
+            "line" : 145,
             "column" : 8,
             "source_fragment" : "c.count((bit<32>) 1)"
           }
@@ -476,7 +614,7 @@
     },
     {
       "name" : "MyIngress.rewrite_src_mac",
-      "id" : 5,
+      "id" : 9,
       "runtime_data" : [
         {
           "name" : "src_mac",
@@ -498,7 +636,7 @@
           ],
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 137,
+            "line" : 159,
             "column" : 8,
             "source_fragment" : "hdr.ethernet.srcAddr = src_mac"
           }
@@ -507,7 +645,7 @@
     },
     {
       "name" : "MyIngress.rewrite_dst_mac",
-      "id" : 6,
+      "id" : 10,
       "runtime_data" : [
         {
           "name" : "dst_mac",
@@ -529,9 +667,139 @@
           ],
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 150,
+            "line" : 172,
             "column" : 8,
             "source_fragment" : "hdr.ethernet.dstAddr = dst_mac"
+          }
+        }
+      ]
+    },
+    {
+      "name" : "MyIngress.reply",
+      "id" : 11,
+      "runtime_data" : [
+        {
+          "name" : "nxt_hop",
+          "bitwidth" : 32
+        },
+        {
+          "name" : "nt_mac",
+          "bitwidth" : 48
+        }
+      ],
+      "primitives" : [
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ipv4", "dstAddr"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ipv4", "srcAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 197,
+            "column" : 8,
+            "source_fragment" : "hdr.ipv4.dstAddr = hdr.ipv4.srcAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ipv4", "srcAddr"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 0
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 198,
+            "column" : 8,
+            "source_fragment" : "hdr.ipv4.srcAddr = nxt_hop"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ethernet", "dstAddr"]
+            },
+            {
+              "type" : "field",
+              "value" : ["ethernet", "srcAddr"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 199,
+            "column" : 8,
+            "source_fragment" : "hdr.ethernet.dstAddr = hdr.ethernet.srcAddr"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["ethernet", "srcAddr"]
+            },
+            {
+              "type" : "runtime_data",
+              "value" : 1
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 200,
+            "column" : 8,
+            "source_fragment" : "hdr.ethernet.srcAddr = nt_mac"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["icmp", "type"]
+            },
+            {
+              "type" : "hexstr",
+              "value" : "0x00"
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 201,
+            "column" : 8,
+            "source_fragment" : "hdr.icmp.type = 0x00"
+          }
+        },
+        {
+          "op" : "assign",
+          "parameters" : [
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "egress_spec"]
+            },
+            {
+              "type" : "field",
+              "value" : ["standard_metadata", "ingress_port"]
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 202,
+            "column" : 8,
+            "source_fragment" : "standard_metadata.egress_spec = standard_metadata.ingress_port"
           }
         }
       ]
@@ -543,7 +811,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/s-router.p4",
-        "line" : 107,
+        "line" : 130,
         "column" : 8,
         "source_fragment" : "MyIngress"
       },
@@ -554,7 +822,7 @@
           "id" : 0,
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 126,
+            "line" : 148,
             "column" : 10,
             "source_fragment" : "ipv4_lpm"
           },
@@ -572,7 +840,7 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [4, 1, 0],
+          "action_ids" : [8, 3, 0],
           "actions" : ["MyIngress.ipv4_fwd", "MyIngress.drop", "NoAction"],
           "base_default_next" : "MyIngress.src_mac",
           "next_tables" : {
@@ -581,7 +849,7 @@
             "NoAction" : "MyIngress.src_mac"
           },
           "default_entry" : {
-            "action_id" : 1,
+            "action_id" : 0,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -592,7 +860,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 140,
+            "line" : 162,
             "column" : 10,
             "source_fragment" : "src_mac"
           },
@@ -610,7 +878,7 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [5, 2],
+          "action_ids" : [9, 4],
           "actions" : ["MyIngress.rewrite_src_mac", "MyIngress.drop"],
           "base_default_next" : "MyIngress.dst_mac",
           "next_tables" : {
@@ -618,7 +886,7 @@
             "MyIngress.drop" : "MyIngress.dst_mac"
           },
           "default_entry" : {
-            "action_id" : 2,
+            "action_id" : 4,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -629,7 +897,7 @@
           "id" : 2,
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 153,
+            "line" : 175,
             "column" : 10,
             "source_fragment" : "dst_mac"
           },
@@ -647,15 +915,108 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [6, 3],
+          "action_ids" : [10, 5],
           "actions" : ["MyIngress.rewrite_dst_mac", "MyIngress.drop"],
+          "base_default_next" : "node_6",
+          "next_tables" : {
+            "MyIngress.rewrite_dst_mac" : "node_6",
+            "MyIngress.drop" : "node_6"
+          },
+          "default_entry" : {
+            "action_id" : 5,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : false
+          }
+        },
+        {
+          "name" : "MyIngress.icmp_flow",
+          "id" : 3,
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 205,
+            "column" : 10,
+            "source_fragment" : "icmp_flow"
+          },
+          "key" : [
+            {
+              "match_type" : "lpm",
+              "name" : "hdr.ipv4.dstAddr",
+              "target" : ["ipv4", "dstAddr"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "lpm",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [11, 2, 7],
+          "actions" : ["MyIngress.reply", "NoAction", "MyIngress.drop"],
           "base_default_next" : null,
           "next_tables" : {
-            "MyIngress.rewrite_dst_mac" : null,
+            "MyIngress.reply" : null,
+            "NoAction" : null,
             "MyIngress.drop" : null
           },
           "default_entry" : {
-            "action_id" : 3,
+            "action_id" : 2,
+            "action_const" : false,
+            "action_data" : [],
+            "action_entry_const" : false
+          }
+        },
+        {
+          "name" : "MyIngress.tcp_flow",
+          "id" : 4,
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 184,
+            "column" : 10,
+            "source_fragment" : "tcp_flow"
+          },
+          "key" : [
+            {
+              "match_type" : "exact",
+              "name" : "hdr.ipv4.srcAddr",
+              "target" : ["ipv4", "srcAddr"],
+              "mask" : null
+            },
+            {
+              "match_type" : "exact",
+              "name" : "hdr.ipv4.dstAddr",
+              "target" : ["ipv4", "dstAddr"],
+              "mask" : null
+            },
+            {
+              "match_type" : "range",
+              "name" : "hdr.tcp.srcPort",
+              "target" : ["tcp", "srcPort"],
+              "mask" : null
+            },
+            {
+              "match_type" : "range",
+              "name" : "hdr.tcp.dstPort",
+              "target" : ["tcp", "dstPort"],
+              "mask" : null
+            }
+          ],
+          "match_type" : "range",
+          "type" : "simple",
+          "max_size" : 1024,
+          "with_counters" : false,
+          "support_timeout" : false,
+          "direct_meters" : null,
+          "action_ids" : [1, 6],
+          "actions" : ["NoAction", "MyIngress.drop"],
+          "base_default_next" : null,
+          "next_tables" : {
+            "NoAction" : null,
+            "MyIngress.drop" : null
+          },
+          "default_entry" : {
+            "action_id" : 6,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -669,8 +1030,8 @@
           "id" : 0,
           "source_info" : {
             "filename" : "p4/s-router.p4",
-            "line" : 164,
-            "column" : 12,
+            "line" : 217,
+            "column" : 11,
             "source_fragment" : "hdr.ipv4.isValid()"
           },
           "expression" : {
@@ -686,6 +1047,29 @@
           },
           "false_next" : null,
           "true_next" : "MyIngress.ipv4_lpm"
+        },
+        {
+          "name" : "node_6",
+          "id" : 1,
+          "source_info" : {
+            "filename" : "p4/s-router.p4",
+            "line" : 221,
+            "column" : 15,
+            "source_fragment" : "hdr.icmp.isValid()"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "d2b",
+              "left" : null,
+              "right" : {
+                "type" : "field",
+                "value" : ["icmp", "$valid$"]
+              }
+            }
+          },
+          "true_next" : "MyIngress.icmp_flow",
+          "false_next" : "MyIngress.tcp_flow"
         }
       ]
     },
@@ -694,7 +1078,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "p4/s-router.p4",
-        "line" : 176,
+        "line" : 236,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },
@@ -710,7 +1094,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/s-router.p4",
-        "line" : 189,
+        "line" : 249,
         "column" : 1,
         "source_fragment" : "update_checksum( ..."
       },

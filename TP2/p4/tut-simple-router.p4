@@ -248,7 +248,7 @@ control MyIngress(inout headers hdr,
             NoAction;
             drop;
         }
-        default_action = NoAction;
+        default_action = NoAction();
     }
 /*
     table allow{

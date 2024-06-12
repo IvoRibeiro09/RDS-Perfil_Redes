@@ -90,6 +90,36 @@ def writeFwdRules(p4info_helper, sw, dstAddr, mask, nextHop, port, dstMac):
     sw.WriteTableEntry(table_entry)
     print("Installed FWD rule on %s" % sw.name)
 
+def writeTcpFlow(p4info_helper, sw, src_Addr, dst_Addr, src_Range, dst_Range):
+    table_entry = p4info_helper.buildTableEntry(
+        table_name="MyIngress.tcp_flow",
+        match_fields={
+            "hdr.ipv4.srcAddr": src_Addr,
+            "hdr.ipv4.dstAddr": dst_Addr,
+            "hdr.tcp.srcPort": src_Range,
+            "hdr.tcp.dstPort": dst_Range,
+        },
+        action_name="NoAction",
+        action_params={
+            "id": 1
+        })
+    print("Ola")
+    sw.WriteTableEntry(table_entry)
+    print("Installed TCP FLOW rules on %s" % sw.name)
+
+def writeIcmpFlow(p4info_helper, sw, dst_Addr, mask, nextHop, dstMac):
+    table_entry = p4info_helper.buildTableEntry(
+        table_name="MyIngress.icmp_flow",
+        match_fields={
+            "hdr.ipv4.dstAddr": (dst_Addr, mask),
+        },
+        action_name="MyIngress.reply",
+        action_params={
+            "nxt_hop": nextHop,
+            "nt_mac": dstMac     
+        })
+    sw.WriteTableEntry(table_entry)
+    print("Installed ICMP FLOW rules on %s" % sw.name)
 
 def printCounter(p4info_helper, sw, counter_name, index):
     for response in sw.ReadCounters(p4info_helper.get_counters_id(counter_name), index):
@@ -146,6 +176,21 @@ def main(p4info_file_path, bmv2_file_path, json_file, rules):
                 print(fwd_rule)
                 writeFwdRules(p4info_helper, r, fwd_rule[0], fwd_rule[1], fwd_rule[2], fwd_rule[3], fwd_rule[4])
         
+        # TCP FLOW rules
+        # writeTcpFlow(p4info_helper, sw, src_Addr, dst_Addr, src_Port, dst_Port)
+        for r in routers:
+            for rule in rules[r.name]["writeTcpFlow"]:
+                print(rule)
+                #writeTcpFlow(p4info_helper, r, rule[0], rule[1], (rule[2], rule[3]), (rule[4], rule[5]))
+        
+        # ICMP FLOW rules
+        # writeTcpFlow(p4info_helper, sw, src_Addr, dst_Addr, src_Port, dst_Port)
+        for r in routers:
+            for rule in rules[r.name]["writeIcmpFlow"]:
+                print(rule)
+                writeIcmpFlow(p4info_helper, r, rule[0], rule[1], rule[2], rule[3])
+
+
         # Read tables 
         for r in routers: 
             readTableRules(p4info_helper, r)

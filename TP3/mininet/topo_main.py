@@ -30,6 +30,7 @@
 #  Compilador de p4:
 #  p4c-bm2-ss --p4v 16 --p4runtime-files build/s-router.p4.p4info.txt -o build/s-router.json p4/s-router.p4
 #
+# #
 #  Comando para correr:
 #  sudo python mininet/topo_main.py
 #
