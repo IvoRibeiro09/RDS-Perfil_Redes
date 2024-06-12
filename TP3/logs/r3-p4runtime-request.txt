@@ -730,3 +730,81 @@ entities {
   }
 }
 ---
+
+[2024-06-12 17:40:13.609] /p4.v1.P4Runtime/Read
+---
+device_id: 3
+entities {
+  counter_entry {
+    counter_id: 315478639
+    index {
+      index: 1
+    }
+  }
+}
+---
+
+[2024-06-12 17:40:23.619] /p4.v1.P4Runtime/Read
+---
+device_id: 3
+entities {
+  counter_entry {
+    counter_id: 315478639
+    index {
+      index: 1
+    }
+  }
+}
+---
+
+[2024-06-12 17:40:33.633] /p4.v1.P4Runtime/Read
+---
+device_id: 3
+entities {
+  counter_entry {
+    counter_id: 315478639
+    index {
+      index: 1
+    }
+  }
+}
+---
+
+[2024-06-12 17:40:43.645] /p4.v1.P4Runtime/Read
+---
+device_id: 3
+entities {
+  counter_entry {
+    counter_id: 315478639
+    index {
+      index: 1
+    }
+  }
+}
+---
+
+[2024-06-12 17:40:53.651] /p4.v1.P4Runtime/Read
+---
+device_id: 3
+entities {
+  counter_entry {
+    counter_id: 315478639
+    index {
+      index: 1
+    }
+  }
+}
+---
+
+[2024-06-12 17:41:03.659] /p4.v1.P4Runtime/Read
+---
+device_id: 3
+entities {
+  counter_entry {
+    counter_id: 315478639
+    index {
+      index: 1
+    }
+  }
+}
+---

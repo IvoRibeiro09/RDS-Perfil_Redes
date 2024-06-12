@@ -4,10 +4,7 @@
       "name" : "scalars_0",
       "id" : 0,
       "fields" : [
-        ["metadata.next_hop_ipv4", 32, false],
-        ["metadata.entrada", 9, false],
-        ["metadata.saida", 9, false],
-        ["_padding_0", 6, false]
+        ["metadata.next_hop_ipv4", 32, false]
       ]
     },
     {
@@ -240,7 +237,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/tut-simple-router.p4",
-        "line" : 318,
+        "line" : 255,
         "column" : 8,
         "source_fragment" : "MyDeparser"
       },
@@ -257,7 +254,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/tut-simple-router.p4",
-        "line" : 296,
+        "line" : 233,
         "column" : 1,
         "source_fragment" : "update_checksum( ..."
       },
@@ -319,10 +316,26 @@
       "primitives" : []
     },
     {
-      "name" : "NoAction",
+      "name" : "MyIngress.drop",
       "id" : 1,
       "runtime_data" : [],
-      "primitives" : []
+      "primitives" : [
+        {
+          "op" : "mark_to_drop",
+          "parameters" : [
+            {
+              "type" : "header",
+              "value" : "standard_metadata"
+            }
+          ],
+          "source_info" : {
+            "filename" : "p4/tut-simple-router.p4",
+            "line" : 144,
+            "column" : 8,
+            "source_fragment" : "mark_to_drop(standard_metadata)"
+          }
+        }
+      ]
     },
     {
       "name" : "MyIngress.drop",
@@ -339,7 +352,7 @@
           ],
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 173,
+            "line" : 144,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -361,7 +374,7 @@
           ],
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 173,
+            "line" : 144,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -383,7 +396,7 @@
           ],
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 173,
+            "line" : 144,
             "column" : 8,
             "source_fragment" : "mark_to_drop(standard_metadata)"
           }
@@ -391,26 +404,10 @@
       ]
     },
     {
-      "name" : "MyIngress.drop",
+      "name" : "MyIngress.Noaction",
       "id" : 5,
       "runtime_data" : [],
-      "primitives" : [
-        {
-          "op" : "mark_to_drop",
-          "parameters" : [
-            {
-              "type" : "header",
-              "value" : "standard_metadata"
-            }
-          ],
-          "source_info" : {
-            "filename" : "p4/tut-simple-router.p4",
-            "line" : 173,
-            "column" : 8,
-            "source_fragment" : "mark_to_drop(standard_metadata)"
-          }
-        }
-      ]
+      "primitives" : []
     },
     {
       "name" : "MyIngress.ipv4_fwd",
@@ -440,7 +437,7 @@
           ],
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 181,
+            "line" : 153,
             "column" : 8,
             "source_fragment" : "meta.next_hop_ipv4 = nxt_hop"
           }
@@ -459,7 +456,7 @@
           ],
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 182,
+            "line" : 154,
             "column" : 8,
             "source_fragment" : "standard_metadata.egress_spec = port"
           }
@@ -501,7 +498,7 @@
           ],
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 183,
+            "line" : 155,
             "column" : 8,
             "source_fragment" : "hdr.ipv4.ttl = hdr.ipv4.ttl - 1"
           }
@@ -532,7 +529,7 @@
           ],
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 197,
+            "line" : 168,
             "column" : 8,
             "source_fragment" : "hdr.ethernet.srcAddr = src_mac"
           }
@@ -563,7 +560,7 @@
           ],
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 211,
+            "line" : 181,
             "column" : 8,
             "source_fragment" : "hdr.ethernet.dstAddr = dst_mac"
           }
@@ -577,7 +574,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/tut-simple-router.p4",
-        "line" : 169,
+        "line" : 140,
         "column" : 8,
         "source_fragment" : "MyIngress"
       },
@@ -588,7 +585,7 @@
           "id" : 0,
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 186,
+            "line" : 157,
             "column" : 10,
             "source_fragment" : "ipv4_lpm"
           },
@@ -606,7 +603,7 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [6, 2, 0],
+          "action_ids" : [6, 1, 0],
           "actions" : ["MyIngress.ipv4_fwd", "MyIngress.drop", "NoAction"],
           "base_default_next" : "MyIngress.src_mac",
           "next_tables" : {
@@ -626,7 +623,7 @@
           "id" : 1,
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 200,
+            "line" : 171,
             "column" : 10,
             "source_fragment" : "src_mac"
           },
@@ -644,7 +641,7 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [7, 3],
+          "action_ids" : [7, 2],
           "actions" : ["MyIngress.rewrite_src_mac", "MyIngress.drop"],
           "base_default_next" : "MyIngress.dst_mac",
           "next_tables" : {
@@ -652,7 +649,7 @@
             "MyIngress.drop" : "MyIngress.dst_mac"
           },
           "default_entry" : {
-            "action_id" : 3,
+            "action_id" : 2,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -663,7 +660,7 @@
           "id" : 2,
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 214,
+            "line" : 183,
             "column" : 10,
             "source_fragment" : "dst_mac"
           },
@@ -681,15 +678,15 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [8, 4],
+          "action_ids" : [8, 3],
           "actions" : ["MyIngress.rewrite_dst_mac", "MyIngress.drop"],
-          "base_default_next" : "MyIngress.tcp_flow",
+          "base_default_next" : "node_6",
           "next_tables" : {
-            "MyIngress.rewrite_dst_mac" : "MyIngress.tcp_flow",
-            "MyIngress.drop" : "MyIngress.tcp_flow"
+            "MyIngress.rewrite_dst_mac" : "node_6",
+            "MyIngress.drop" : "node_6"
           },
           "default_entry" : {
-            "action_id" : 4,
+            "action_id" : 3,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -700,7 +697,7 @@
           "id" : 3,
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 223,
+            "line" : 192,
             "column" : 10,
             "source_fragment" : "tcp_flow"
           },
@@ -736,15 +733,15 @@
           "with_counters" : false,
           "support_timeout" : false,
           "direct_meters" : null,
-          "action_ids" : [1, 5],
-          "actions" : ["NoAction", "MyIngress.drop"],
+          "action_ids" : [5, 4],
+          "actions" : ["MyIngress.Noaction", "MyIngress.drop"],
           "base_default_next" : null,
           "next_tables" : {
-            "NoAction" : null,
+            "MyIngress.Noaction" : null,
             "MyIngress.drop" : null
           },
           "default_entry" : {
-            "action_id" : 5,
+            "action_id" : 4,
             "action_const" : false,
             "action_data" : [],
             "action_entry_const" : false
@@ -758,7 +755,7 @@
           "id" : 0,
           "source_info" : {
             "filename" : "p4/tut-simple-router.p4",
-            "line" : 264,
+            "line" : 205,
             "column" : 11,
             "source_fragment" : "hdr.ipv4.isValid()"
           },
@@ -775,6 +772,29 @@
           },
           "false_next" : null,
           "true_next" : "MyIngress.ipv4_lpm"
+        },
+        {
+          "name" : "node_6",
+          "id" : 1,
+          "source_info" : {
+            "filename" : "p4/tut-simple-router.p4",
+            "line" : 209,
+            "column" : 15,
+            "source_fragment" : "hdr.tcp.isValid()"
+          },
+          "expression" : {
+            "type" : "expression",
+            "value" : {
+              "op" : "d2b",
+              "left" : null,
+              "right" : {
+                "type" : "field",
+                "value" : ["tcp", "$valid$"]
+              }
+            }
+          },
+          "false_next" : null,
+          "true_next" : "MyIngress.tcp_flow"
         }
       ]
     },
@@ -783,7 +803,7 @@
       "id" : 1,
       "source_info" : {
         "filename" : "p4/tut-simple-router.p4",
-        "line" : 283,
+        "line" : 220,
         "column" : 8,
         "source_fragment" : "MyEgress"
       },
@@ -799,7 +819,7 @@
       "id" : 0,
       "source_info" : {
         "filename" : "p4/tut-simple-router.p4",
-        "line" : 296,
+        "line" : 233,
         "column" : 1,
         "source_fragment" : "update_checksum( ..."
       },

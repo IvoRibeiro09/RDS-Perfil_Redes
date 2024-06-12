@@ -26,8 +26,8 @@ class P4Host(Host):
     def config(self, **params):
         r = super(Host, self).config(**params)
 
-        self.defaultIntf().rename(self.name+"-eth0")
-        
+        self.defaultIntf().rename("eth0")
+
         for off in ["rx", "tx", "sg"]:
             cmd = "/sbin/ethtool --offload eth0 %s off" % off
             self.cmd(cmd)
@@ -37,8 +37,8 @@ class P4Host(Host):
         self.cmd("sysctl -w net.ipv6.conf.default.disable_ipv6=1")
         self.cmd("sysctl -w net.ipv6.conf.lo.disable_ipv6=1")
 
-        return 
-    
+        return r
+
     def describe(self):
         print("**********")
         print(self.name)
@@ -142,7 +142,7 @@ class P4Switch(Switch):
             error("P4 switch {} did not start correctly.\n".format(self.name))
             exit(1)
         info("P4 switch {} has been started.\n".format(self.name))
-        
+
     def stop(self):
         "Terminate P4 switch."
         self.output.flush()
