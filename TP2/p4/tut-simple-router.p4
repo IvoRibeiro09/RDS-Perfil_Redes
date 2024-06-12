@@ -22,11 +22,8 @@ const bit<8> TYPE_ICMP = 0x01;
 /* simple typedef to ease your task */
 
 typedef bit<9>  egressSpec_t;
-typedef bit<9>  portin_t;
-typedef bit<9>  portout_t;
 typedef bit<48> macAddr_t;
 typedef bit<32> ip4Addr_t;
-
 
 /**
 * Here we define the headers of the protocols
@@ -78,7 +75,6 @@ header icmp_t {
     bit<32>   rest;
 }
 
-
 /**
 * You can use this structure to pass 
 * information between blocks/pipelines.
@@ -87,9 +83,6 @@ header icmp_t {
 */
 struct metadata {
     ip4Addr_t   next_hop_ipv4;
-    portin_t    entrada;
-    portout_t   saida;
-
 }
 /* all the headers previously defined */
 struct headers {
@@ -129,7 +122,6 @@ parser MyParser(packet_in packet,
         packet.extract (hdr.ipv4);
         transition select(hdr.ipv4.protocol){
             TYPE_TCP: parse_tcp; 
-            //TYPE_UDP: parse_udp;
             TYPE_ICMP: parse_icmp;
             default: accept;
         }
@@ -140,13 +132,6 @@ parser MyParser(packet_in packet,
         transition accept;
     }
 
-    /*state parse_udp{
-        packet.extract (hdr.udp);
-        transition.select(hdr.udp){
-            default:accept;
-        }
-    }
-    */
     state parse_icmp{
         packet.extract (hdr.icmp);
         transition accept;
@@ -172,61 +157,59 @@ control MyIngress(inout headers hdr,
     action drop() {
         mark_to_drop(standard_metadata);
     }
+    action Noaction() {}
 
     /**
     * this is your main pipeline
     * where we define the actions and tables
     */
-    action ipv4_fwd(ip4Addr_t nxt_hop, egressSpec_t port){
+    action ipv4_fwd(ip4Addr_t nxt_hop, egressSpec_t port) {
         meta.next_hop_ipv4 = nxt_hop;
         standard_metadata.egress_spec = port;
         hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
     }
-    
-    table ipv4_lpm{
+    table ipv4_lpm {
         key = { hdr.ipv4.dstAddr : lpm; }
         actions = {
             ipv4_fwd;
             drop;
-            NoAction;
+            Noaction;
         }
-        default_action = NoAction();
+        default_action = Noaction; // NoAction is defined in v1model - does nothing
     }
-
-    action rewrite_src_mac(macAddr_t src_mac){
+            
+    action rewrite_src_mac(macAddr_t src_mac) {
         hdr.ethernet.srcAddr = src_mac;
     }
-
-    table src_mac{
-            key = { standard_metadata.egress_spec : exact; }
-            actions = {
-                rewrite_src_mac;
-                drop;
-            }
-            default_action = drop;
+        
+    table src_mac {
+        key = { standard_metadata.egress_spec : exact; }
+        actions = {
+            rewrite_src_mac;
+            drop;
         }
+        default_action = drop;
+    }
 
-
-    action rewrite_dst_mac(macAddr_t dst_mac){
+    action rewrite_dst_mac(macAddr_t dst_mac) {
         hdr.ethernet.dstAddr = dst_mac;
     }
-        
-    table dst_mac{
+    table dst_mac {
         key = { meta.next_hop_ipv4 : exact; }
-        actions = {
+            actions = {
             rewrite_dst_mac;
             drop;
         }
         default_action = drop;
     }
-    
+
     table tcp_flow{
         key = {hdr.ipv4.srcAddr : exact;
                hdr.ipv4.dstAddr : exact;
                hdr.tcp.srcPort : range;
                hdr.tcp.dstPort : range;}    
         actions = {
-            NoAction;
+            Noaction;
             drop;
         }
         default_action = drop;
@@ -250,54 +233,19 @@ control MyIngress(inout headers hdr,
         }
         default_action = NoAction();
     }
-/*
-    table allow{
-        key = {hdr.ipv4.protocol : exact;}    
-        actions = {
-            NoAction;
-            drop;
-        }
-        default_action = drop;
-    }
-
-    action deny_icmp_action(){
-        drop;
-    }
-
-    table deny_icmp{
-        key = { hdr.icmp.isvalid():exact}
-        action = {
-            deny_icmp_action;
-        }
-        default_action = deny_icmp_action;
-    }
-
-    */
-    
     
     apply {
-        /**
-        * The conditions and order in which the software 
-        * switch must apply the tables. 
-        */
         if(hdr.ipv4.isValid()){
             ipv4_lpm.apply();
             src_mac.apply();
             dst_mac.apply();
+            if(hdr.tcp.isValid()){
+                tcp_flow.apply();
+            }
             if(hdr.icmp.isValid()){
                 icmp_flow.apply();
             }
-            else{
-                tcp_flow.apply();
-            }
-            
         }
-
-
-        /*if(hdr.icmp.isValid()){
-            icmp.apply();
-        }*/
-
     }
 }
 
@@ -342,15 +290,10 @@ control MyComputeChecksum(inout headers  hdr, inout metadata meta) {
 
 control MyDeparser(packet_out packet, in headers hdr) {
     apply {
-
         packet.emit(hdr.ethernet);
         packet.emit(hdr.ipv4);
         packet.emit(hdr.tcp);
         packet.emit(hdr.icmp);
-        /*
-        * add the extracted headers to the packet 
-        * packet.emit(hdr.ethernet);
-        */
     }
 }
 
