@@ -96,7 +96,6 @@ parser MyParser(packet_in packet,
         packet.extract (hdr.ipv4);
         transition select(hdr.ipv4.protocol){
             TYPE_TCP: parse_tcp; 
-            //TYPE_UDP: parse_udp;
             TYPE_ICMP: parse_icmp;
             default: accept;
         }
@@ -152,7 +151,7 @@ control MyIngress(inout headers hdr,
             drop;
             NoAction;
         }
-        default_action = NoAction();
+        default_action = NoAction;
     }
 
     action rewrite_src_mac(macAddr_t src_mac) {
@@ -209,7 +208,7 @@ control MyIngress(inout headers hdr,
             NoAction;
             drop;
         }
-        default_action = NoAction();
+        default_action = NoAction;
     }
     
     
@@ -218,13 +217,12 @@ control MyIngress(inout headers hdr,
             ipv4_lpm.apply();
             src_mac.apply();
             dst_mac.apply();
+            if(hdr.tcp.isValid()){
+                tcp_flow.apply();
+            }
             if(hdr.icmp.isValid()){
                 icmp_flow.apply();
             }
-            else{
-                tcp_flow.apply();
-            }
-            
         }
     }
 }
