@@ -91,7 +91,6 @@ def writeFwdRules(p4info_helper, sw, dstAddr, mask, nextHop, port, dstMac):
     print("Installed FWD rule on %s" % sw.name)
 
 def writeTcpFlow(p4info_helper, sw, src_Addr, dst_Addr, src_Range, dst_Range):
-    print(src_Addr, dst_Addr, src_Range, dst_Range)
     table_entry = p4info_helper.buildTableEntry(
         table_name="MyIngress.tcp_flow",
         match_fields={
@@ -103,9 +102,7 @@ def writeTcpFlow(p4info_helper, sw, src_Addr, dst_Addr, src_Range, dst_Range):
         action_name="NoAction",
         action_params = {},
         priority = 1)
-    print("aqui")
     sw.WriteTableEntry(table_entry)
-    print("aqui2")
     print("Installed TCP FLOW rules on %s" % sw.name)
 
 def writeIcmpFlow(p4info_helper, sw, dst_Addr, mask, nextHop, dstMac):
